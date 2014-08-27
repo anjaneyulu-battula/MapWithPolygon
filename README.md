@@ -7,4 +7,4 @@ This Project Contains the follwing features
 2. Zoom to perticular area using latitude and longitude points.(
    a) Zoom to polygons and polylines area
    b) Zoom to current location.
-3. Finding the perticular latitude and longitude point is with in that polygon or not.
+3. Find out the perticular latitude and longitude point is with in that polygon or not.
