@@ -1,0 +1,397 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green116\blue0;\red100\green56\blue32;\red196\green26\blue22;
+\red170\green13\blue145;\red63\green110\blue116;\red92\green38\blue153;\red46\green13\blue110;\red28\green0\blue207;
+\red38\green71\blue75;\red14\green14\blue255;}
+\paperw12240\paperh15840\margl1440\margr1440\vieww9000\viewh8400\viewkind0
+\deftab529
+\pard\tx529\pardeftab529\pardirnatural
+
+\f0\fs22 \cf2 \CocoaLigature0 //\cf0 \
+\cf2 //  MapViewController.m\cf0 \
+\cf2 //  MapWithPolygon\cf0 \
+\cf2 //\cf0 \
+\cf2 //  Created by Anjaneyulu Battula on 12/08/14.\cf0 \
+\cf2 //  Copyright (c) 2014 Riktam. All rights reserved.\cf0 \
+\cf2 //\cf0 \
+\
+\cf3 #import \cf4 "MapViewController.h"\cf3 \
+#import \cf4 <MapKit/MapKit.h>\cf3 \
+\cf0 \
+\cf5 @interface\cf0  \cf6 MapViewController\cf0  () <\cf7 MKMapViewDelegate\cf0 >\
+\{\
+    \cf5 __block\cf0  \cf7 NSMutableArray\cf0  *latLongForBoundaryMArray;\
+    \cf7 MKMapView\cf0  *regionsMapView;\
+    \cf7 NSArray\cf0  *polygonArray;\
+\}\
+\
+\cf5 @end\cf0 \
+\
+\cf5 @implementation\cf0  MapViewController\
+\
+\cf3 #pragma mark - View Life cycle\
+\cf0 \
+- (\cf5 id\cf0 )initWithNibName:(\cf7 NSString\cf0  *)nibNameOrNil bundle:(\cf7 NSBundle\cf0  *)nibBundleOrNil\
+\{\
+    \cf5 self\cf0  = [\cf5 super\cf0  \cf8 initWithNibName\cf0 :nibNameOrNil \cf8 bundle\cf0 :nibBundleOrNil];\
+    \cf5 if\cf0  (\cf5 self\cf0 ) \{\
+        \cf2 // Custom initialization\cf0 \
+        \cf5 if\cf0  (\cf3 IS_OS_7_OR_LATER\cf0 )\
+        \{\
+            \cf5 self\cf0 .\cf7 edgesForExtendedLayout\cf0  = \cf8 UIRectEdgeNone\cf0 ;\
+            \cf5 self\cf0 .\cf7 extendedLayoutIncludesOpaqueBars\cf0  = \cf5 NO\cf0 ;\
+            \cf5 self\cf0 .\cf7 automaticallyAdjustsScrollViewInsets\cf0  = \cf5 NO\cf0 ;\
+        \}\
+    \}\
+    \cf5 return\cf0  \cf5 self\cf0 ;\
+\}\
+\
+- (\cf5 void\cf0 )viewDidLoad\
+\{\
+    [\cf5 super\cf0  \cf8 viewDidLoad\cf0 ];\
+    \
+    \cf2 // Do any additional setup after loading the view from its nib.\cf0 \
+    \cf7 UIBarButtonItem\cf0  *zoomBarBtnItem = [[\cf7 UIBarButtonItem\cf0  \cf8 alloc\cf0 ] \cf8 initWithTitle\cf0 :\cf4 @"Zoom"\cf0  \cf8 style\cf0 :\cf8 UIBarButtonItemStyleBordered\cf0  \cf8 target\cf0 :\cf5 self\cf0  \cf8 action\cf0 :\cf5 @selector\cf0 (zoomBtnClicked)];\
+    \cf5 self\cf0 .\cf7 navigationController\cf0 .\cf7 navigationItem\cf0 .\cf7 leftBarButtonItem\cf0  = zoomBarBtnItem;\
+    \cf5 self\cf0 .\cf7 navigationItem\cf0 .\cf7 leftBarButtonItem\cf0  = zoomBarBtnItem;\
+    \
+    \cf7 NSDictionary\cf0  *polygon1 = [[\cf7 NSDictionary\cf0  \cf8 alloc\cf0 ] \cf8 initWithObjectsAndKeys\cf0 :\cf4 @"yellow"\cf0 , \cf4 @"color"\cf0 , \cf4 @"lineareabuffer"\cf0 , \cf4 @"filename"\cf0 , \cf4 @"line"\cf0 , \cf4 @"type"\cf0 , \cf5 nil\cf0 ];\
+    \cf7 NSDictionary\cf0  *polygon2 = [[\cf7 NSDictionary\cf0  \cf8 alloc\cf0 ] \cf8 initWithObjectsAndKeys\cf0 :\cf4 @"green"\cf0 , \cf4 @"color"\cf0 , \cf4 @"sharedusearea"\cf0 , \cf4 @"filename"\cf0 , \cf4 @"polygon"\cf0 , \cf4 @"type"\cf0 , \cf5 nil\cf0 ];\
+    \cf7 NSDictionary\cf0  *polygon3 = [[\cf7 NSDictionary\cf0  \cf8 alloc\cf0 ] \cf8 initWithObjectsAndKeys\cf0 :\cf4 @"red"\cf0 , \cf4 @"color"\cf0 , \cf4 @"29palms"\cf0 , \cf4 @"filename"\cf0 , \cf4 @"polygon"\cf0 , \cf4 @"type"\cf0 , \cf5 nil\cf0 ];\
+    \cf6 polygonArray\cf0  = [[\cf7 NSArray\cf0  \cf8 alloc\cf0 ] \cf8 initWithObjects\cf0 :polygon1, polygon2, polygon3, \cf5 nil\cf0 ];\
+\
+    \cf6 regionsMapView\cf0  = [[\cf7 MKMapView\cf0  \cf8 alloc\cf0 ] \cf8 initWithFrame\cf0 :\cf8 CGRectMake\cf0 (\cf9 0\cf0 , \cf9 0\cf0 , \cf5 self\cf0 .\cf7 view\cf0 .\cf7 frame\cf0 .\cf7 size\cf0 .\cf7 width\cf0 , \cf5 self\cf0 .\cf7 view\cf0 .\cf7 frame\cf0 .\cf7 size\cf0 .\cf7 height\cf0  - \cf9 64\cf0 )];\
+    \cf6 regionsMapView\cf0 .\cf7 delegate\cf0  = \cf5 self\cf0 ;\
+    \cf6 regionsMapView\cf0 .\cf7 showsUserLocation\cf0  = \cf5 YES\cf0 ;\
+    \cf6 regionsMapView\cf0 .\cf7 mapType\cf0  = \cf8 MKMapTypeSatellite\cf0 ;\
+    [\cf5 self\cf0 .\cf7 view\cf0  \cf8 addSubview\cf0 :\cf6 regionsMapView\cf0 ];\
+    \
+\cf2 //    CLLocationCoordinate2D startCoord = CLLocationCoordinate2DMake(34.472478382,-116.490116604);\cf0 \
+\cf2 //    MKCoordinateRegion adjustedRegion = [regionsMapView regionThatFits:MKCoordinateRegionMakeWithDistance(startCoord, 400, 400)];\cf0 \
+\cf2 //    [regionsMapView setRegion:adjustedRegion animated:YES];\cf0 \
+    [\cf5 self\cf0  \cf10 addPolygonsAndPolyLinesToTheRegionsMapView\cf0 ];\
+    \
+    \cf7 CLLocationCoordinate2D\cf0  checkpoint = \cf8 CLLocationCoordinate2DMake\cf0 (\cf9 34.201182\cf0 ,-\cf9 116.048491\cf0 );\
+    [\cf5 self\cf0  \cf10 pointInsideOverlay\cf0 :checkpoint];\
+\
+\}\
+\
+- (\cf5 void\cf0 )didReceiveMemoryWarning\
+\{\
+    [\cf5 super\cf0  \cf8 didReceiveMemoryWarning\cf0 ];\
+    \cf2 // Dispose of any resources that can be recreated.\cf0 \
+\}\
+\
+\cf3 #pragma mark - Developer Methods\
+\cf0 \
+- (\cf5 void\cf0 )zoomBtnClicked \{\
+    \
+    [\cf5 self\cf0  \cf10 zoomToAnnotationsBounds\cf0 :\cf6 latLongForBoundaryMArray\cf0 ];\
+\}\
+\
+\cf2 //adding Polygons and PolyLines to the MapView\cf0 \
+- (\cf5 void\cf0 )addPolygonsAndPolyLinesToTheRegionsMapView\
+\{\
+    \
+\cf2 //    __block NSMutableArray *latLongForBoundaryMArray = [[NSMutableArray alloc] init];\cf0 \
+    \cf6 latLongForBoundaryMArray\cf0  = [[\cf7 NSMutableArray\cf0  \cf8 alloc\cf0 ] \cf8 init\cf0 ];\
+    \
+    [\cf6 polygonArray\cf0  \cf8 enumerateObjectsUsingBlock\cf0 :^(\cf7 NSDictionary\cf0  *dic, \cf7 NSUInteger\cf0  polygonIdx, \cf5 BOOL\cf0  *stop) \{\
+        dic = [\cf6 polygonArray\cf0  \cf8 objectAtIndex\cf0 :polygonIdx];\
+        \
+        \cf2 //retrieving info from csv file\cf0 \
+        \cf7 NSString\cf0  *filePath = [[\cf7 NSBundle\cf0  \cf8 mainBundle\cf0 ] \cf8 pathForResource\cf0 :[dic \cf8 objectForKey\cf0 :\cf4 @"filename"\cf0 ] \cf8 ofType\cf0 :\cf4 @"csv"\cf0 ];\
+        \cf7 NSString\cf0  *fileContents = [\cf7 NSString\cf0  \cf8 stringWithContentsOfFile\cf0 :filePath \cf8 encoding\cf0 :\cf8 NSUTF8StringEncoding\cf0  \cf8 error\cf0 :\cf5 nil\cf0 ];\
+        \cf7 NSArray\cf0  *latLongArray = [fileContents \cf8 componentsSeparatedByCharactersInSet\cf0 :[\cf7 NSCharacterSet\cf0  \cf8 whitespaceAndNewlineCharacterSet\cf0 ]];\
+        \cf7 CLLocationCoordinate2D\cf0  *coords = \cf8 malloc\cf0 (\cf5 sizeof\cf0 (\cf7 CLLocationCoordinate2D\cf0 ) * [latLongArray \cf8 count\cf0 ]);\
+        \
+        \cf2 //adding latitutde,longitutde array strings to the CLLocationCoordinate array\cf0 \
+        [latLongArray \cf8 enumerateObjectsUsingBlock\cf0 :^(\cf7 NSString\cf0  *latLongObj, \cf7 NSUInteger\cf0  latLongIdx, \cf5 BOOL\cf0  *stop) \{\
+            latLongObj = [latLongArray \cf8 objectAtIndex\cf0 :latLongIdx];\
+            \cf7 NSArray\cf0  *latLongPoint = [latLongObj \cf8 componentsSeparatedByString\cf0 :\cf4 @","\cf0 ];\
+            coords[latLongIdx] = \cf8 CLLocationCoordinate2DMake\cf0 ([[latLongPoint \cf8 objectAtIndex\cf0 :\cf9 0\cf0 ] \cf8 doubleValue\cf0 ], [[latLongPoint \cf8 objectAtIndex\cf0 :\cf9 1\cf0 ] \cf8 doubleValue\cf0 ]);\
+        \}];\
+        \
+        \cf2 //adding polygon,polyline latitude,longitude points to the latLongForBoundaryArray to zoom the ploted area\cf0 \
+        [\cf6 latLongForBoundaryMArray\cf0  \cf8 addObjectsFromArray\cf0 :latLongArray];\
+        \
+        \cf2 //if type is polygon we add latLongArray to the MKPolygon\cf0 \
+        \cf5 if\cf0  ([[dic \cf8 objectForKey\cf0 :\cf4 @"type"\cf0 ] \cf8 isEqualToString\cf0 :\cf4 @"polygon"\cf0 ]) \{\
+            \cf7 MKPolygon\cf0  *polygontemp = [\cf7 MKPolygon\cf0  \cf8 polygonWithCoordinates\cf0 :coords \cf8 count\cf0 :[latLongArray \cf8 count\cf0 ]];\
+            polygontemp.\cf7 title\cf0  = [dic \cf8 objectForKey\cf0 :\cf4 @"color"\cf0 ];\
+            \cf8 free\cf0 (coords);\
+            [\cf6 regionsMapView\cf0  \cf8 addOverlay\cf0 :polygontemp];\
+        \}\cf2 //if type is line we add latLongArray to the MKPolyline\cf0 \
+        \cf5 else\cf0  \cf5 if\cf0  ([[dic \cf8 objectForKey\cf0 :\cf4 @"type"\cf0 ] \cf8 isEqualToString\cf0 :\cf4 @"line"\cf0 ]) \{\
+            \cf7 MKPolyline\cf0  *line = [\cf7 MKPolyline\cf0  \cf8 polylineWithCoordinates\cf0 :coords \cf8 count\cf0 :[latLongArray \cf8 count\cf0 ]];\
+            line.\cf7 title\cf0  = \cf4 @"line"\cf0 ;\
+            \cf8 free\cf0 (coords);\
+            [\cf6 regionsMapView\cf0  \cf8 addOverlay\cf0 :line];\
+        \}\
+    \}];\
+    \
+    \cf2 //to zoom the ploted Area\cf0 \
+    [\cf5 self\cf0  \cf10 zoomToAnnotationsBounds\cf0 :(\cf7 NSArray\cf0 *)\cf6 latLongForBoundaryMArray\cf0 ];\
+    \
+\}\
+\
+\cf2 //checking whether current location is inside polygon or not\cf0 \
+-(\cf5 void\cf0 )pointInsideOverlay:(\cf7 CLLocationCoordinate2D\cf0  )tapPoint\
+\{\
+    \cf5 __block\cf0  \cf5 BOOL\cf0  isInside = \cf5 FALSE\cf0 ;\
+    \
+    \cf7 NSArray\cf0  *overlaysArray = [\cf6 regionsMapView\cf0  \cf8 overlays\cf0 ];\
+    [overlaysArray \cf8 enumerateObjectsUsingBlock\cf0 :^(\cf5 id\cf0  overlayObj, \cf7 NSUInteger\cf0  overlayIdx, \cf5 BOOL\cf0  *stop) \{\
+        \
+        overlayObj = [overlaysArray \cf8 objectAtIndex\cf0 :overlayIdx];\
+        \
+        \cf5 if\cf0  ([overlayObj \cf8 isKindOfClass\cf0 :[\cf7 MKPolygon\cf0  \cf8 class\cf0 ]]) \{\
+            \
+            \cf7 MKPolygon\cf0  *polygon = (\cf7 MKPolygon\cf0  *)overlayObj;\
+            \cf5 if\cf0  ([polygon.\cf7 title\cf0  \cf8 isEqualToString\cf0 :\cf4 @"red"\cf0 ]) \{\
+                \
+                \cf7 MKPolygonView\cf0  *polygonView = (\cf7 MKPolygonView\cf0  *)[\cf6 regionsMapView\cf0  \cf8 viewForOverlay\cf0 :overlayObj];\
+                \cf7 MKMapPoint\cf0  mapPoint = \cf8 MKMapPointForCoordinate\cf0 (tapPoint);\
+                \cf7 CGPoint\cf0  polygonViewPoint = [polygonView \cf8 pointForMapPoint\cf0 :mapPoint];\
+                \cf5 BOOL\cf0  mapCoordinateIsInPolygon = \cf8 CGPathContainsPoint\cf0 (polygonView.\cf7 path\cf0 , \cf5 NULL\cf0 , polygonViewPoint, \cf5 NO\cf0 );\
+                \
+                \cf2 //we are checking the points that are inside the overlay\cf0 \
+                \cf5 if\cf0  (mapCoordinateIsInPolygon ) \{\
+                    isInside = \cf5 TRUE\cf0 ;\
+                    \cf8 NSLog\cf0 (\cf4 @"TRUE"\cf0 );\
+                \}\
+                \cf5 else\cf0  \{\
+                    \cf8 NSLog\cf0 (\cf4 @"FALSE"\cf0 );\
+                \}\
+            \}\
+        \}\
+    \}];\
+    \
+\}\
+\
+\cf2 //Zooming the ploted Area\cf0 \
+- (\cf5 void\cf0 )zoomToAnnotationsBounds:(\cf7 NSArray\cf0  *)latLongArray \{\
+    \
+    \cf5 __block\cf0  \cf7 CLLocationDegrees\cf0  minLatitude = \cf3 DBL_MAX\cf0 ;\
+    \cf5 __block\cf0  \cf7 CLLocationDegrees\cf0  maxLatitude = -\cf3 DBL_MAX\cf0 ;\
+    \cf5 __block\cf0  \cf7 CLLocationDegrees\cf0  minLongitude = \cf3 DBL_MAX\cf0 ;\
+    \cf5 __block\cf0  \cf7 CLLocationDegrees\cf0  maxLongitude = -\cf3 DBL_MAX\cf0 ;\
+    \
+    [latLongArray \cf8 enumerateObjectsUsingBlock\cf0 :^(\cf7 NSString\cf0  *latLongObj, \cf7 NSUInteger\cf0  latLongIdx, \cf5 BOOL\cf0  *stop) \{\
+        latLongObj = [latLongArray \cf8 objectAtIndex\cf0 :latLongIdx];\
+        \cf7 NSArray\cf0  *latLongPoint = [latLongObj \cf8 componentsSeparatedByString\cf0 :\cf4 @","\cf0 ];\
+\cf2 //        coords[latLongIdx] = CLLocationCoordinate2DMake([[latLongPoint objectAtIndex:0] doubleValue], [[latLongPoint objectAtIndex:1] doubleValue]);\cf0 \
+        \
+        \cf5 double\cf0  annotationLat = [[latLongPoint \cf8 objectAtIndex\cf0 :\cf9 0\cf0 ] \cf8 doubleValue\cf0 ];\
+        \cf5 double\cf0  annotationLong = [[latLongPoint \cf8 objectAtIndex\cf0 :\cf9 1\cf0 ] \cf8 doubleValue\cf0 ];\
+        minLatitude = \cf8 fmin\cf0 (annotationLat, minLatitude);\
+        maxLatitude = \cf8 fmax\cf0 (annotationLat, maxLatitude);\
+        minLongitude = \cf8 fmin\cf0 (annotationLong, minLongitude);\
+        maxLongitude = \cf8 fmax\cf0 (annotationLong, maxLongitude);\
+    \}];\
+    \
+    \
+    \
+    \cf2 /*\
+    for (Annotation *annotation in annotations) \{\
+        double annotationLat = annotation.coordinate.latitude;\
+        double annotationLong = annotation.coordinate.longitude;\
+        minLatitude = fmin(annotationLat, minLatitude);\
+        maxLatitude = fmax(annotationLat, maxLatitude);\
+        minLongitude = fmin(annotationLong, minLongitude);\
+        maxLongitude = fmax(annotationLong, maxLongitude);\
+    \}\
+     */\cf0 \
+    \
+    \cf2 // See function below\cf0 \
+    [\cf5 self\cf0  \cf10 setMapRegionForMinLat\cf0 :minLatitude \cf10 minLong\cf0 :minLongitude \cf10 maxLat\cf0 :maxLatitude \cf10 maxLong\cf0 :maxLongitude];\
+    \
+    \
+    \cf2 //Not Working Properly\cf0 \
+    \cf2 // If your markers were 40 in height and 20 in width, this would zoom the map to fit them perfectly. Note that there is a bug in mkmapview's set region which means it will snap the map to the nearest whole zoom level, so you will rarely get a perfect fit. But this will ensure a minimum padding.\cf0 \
+\cf2 //    UIEdgeInsets mapPadding = UIEdgeInsetsMake(40.0, 10.0, 0.0, 10.0);\cf0 \
+    \cf7 UIEdgeInsets\cf0  mapPadding = \cf8 UIEdgeInsetsMake\cf0 (\cf9 5.0\cf0 , \cf9 5.0\cf0 , \cf9 5.0\cf0 , \cf9 5.0\cf0 );\
+    \cf7 CLLocationCoordinate2D\cf0  relativeFromCoord = [\cf6 regionsMapView\cf0  \cf8 convertPoint\cf0 :\cf8 CGPointMake\cf0 (\cf9 0\cf0 , \cf9 0\cf0 ) \cf8 toCoordinateFromView\cf0 :\cf6 regionsMapView\cf0 ];\
+    \
+    \cf2 // Calculate the additional lat/long required at the current zoom level to add the padding\cf0 \
+    \cf7 CLLocationCoordinate2D\cf0  topCoord = [\cf6 regionsMapView\cf0  \cf8 convertPoint\cf0 :\cf8 CGPointMake\cf0 (\cf9 0\cf0 , mapPadding.\cf7 top\cf0 ) \cf8 toCoordinateFromView\cf0 :\cf6 regionsMapView\cf0 ];\
+    \cf7 CLLocationCoordinate2D\cf0  rightCoord = [\cf6 regionsMapView\cf0  \cf8 convertPoint\cf0 :\cf8 CGPointMake\cf0 (\cf9 0\cf0 , mapPadding.\cf7 right\cf0 ) \cf8 toCoordinateFromView\cf0 :\cf6 regionsMapView\cf0 ];\
+    \cf7 CLLocationCoordinate2D\cf0  bottomCoord = [\cf6 regionsMapView\cf0  \cf8 convertPoint\cf0 :\cf8 CGPointMake\cf0 (\cf9 0\cf0 , mapPadding.\cf7 bottom\cf0 ) \cf8 toCoordinateFromView\cf0 :\cf6 regionsMapView\cf0 ];\
+    \cf7 CLLocationCoordinate2D\cf0  leftCoord = [\cf6 regionsMapView\cf0  \cf8 convertPoint\cf0 :\cf8 CGPointMake\cf0 (\cf9 0\cf0 , mapPadding.\cf7 left\cf0 ) \cf8 toCoordinateFromView\cf0 :\cf6 regionsMapView\cf0 ];\
+    \
+    \cf5 double\cf0  latitudeSpanToBeAddedToTop = relativeFromCoord.\cf7 latitude\cf0  - topCoord.\cf7 latitude\cf0 ;\
+    \cf5 double\cf0  longitudeSpanToBeAddedToRight = relativeFromCoord.\cf7 latitude\cf0  - rightCoord.\cf7 latitude\cf0 ;\
+    \cf5 double\cf0  latitudeSpanToBeAddedToBottom = relativeFromCoord.\cf7 latitude\cf0  - bottomCoord.\cf7 latitude\cf0 ;\
+    \cf5 double\cf0  longitudeSpanToBeAddedToLeft = relativeFromCoord.\cf7 latitude\cf0  - leftCoord.\cf7 latitude\cf0 ;\
+    \
+    maxLatitude = maxLatitude + latitudeSpanToBeAddedToTop;\
+    minLatitude = minLatitude - latitudeSpanToBeAddedToBottom;\
+    \
+    maxLongitude = maxLongitude + longitudeSpanToBeAddedToRight;\
+    minLongitude = minLongitude - longitudeSpanToBeAddedToLeft;\
+    \
+\cf2 //    [self setMapRegionForMinLat:minLatitude minLong:minLongitude maxLat:maxLatitude maxLong:maxLongitude];\cf0 \
+\}\
+\
+-(\cf5 void\cf0 ) setMapRegionForMinLat:(\cf5 double\cf0 )minLatitude minLong:(\cf5 double\cf0 )minLongitude maxLat:(\cf5 double\cf0 )maxLatitude maxLong:(\cf5 double\cf0 )maxLongitude \{\
+    \
+    \
+    \cf2 //Not Working Properly\cf0 \
+    \cf2 //First Solution\cf0 \
+    \
+    \cf7 MKCoordinateRegion\cf0  region;\
+    region.\cf7 center\cf0 .\cf7 latitude\cf0  = (minLatitude + maxLatitude) / \cf9 2\cf0 ;\
+    region.\cf7 center\cf0 .\cf7 longitude\cf0  = (minLongitude + maxLongitude) / \cf9 2\cf0 ;\
+    region.\cf7 span\cf0 .\cf7 latitudeDelta\cf0  = (maxLatitude - minLatitude);\
+    region.\cf7 span\cf0 .\cf7 longitudeDelta\cf0  = (maxLongitude - minLongitude);\
+    \
+    \cf2 // MKMapView BUG: this snaps to the nearest whole zoom level, which is wrong- it doesn't respect the exact region you asked for. See {\field{\*\fldinst{HYPERLINK "http://stackoverflow.com/questions/1383296/why-mkmapview-region-is-different-than-requested"}}{\fldrslt \cf11 http://stackoverflow.com/questions/1383296/why-mkmapview-region-is-different-than-requested}}\cf0 \
+    [\cf6 regionsMapView\cf0  \cf8 setRegion\cf0 :region \cf8 animated\cf0 :\cf5 YES\cf0 ];\
+    \
+    \
+    \
+    \cf2 //Second Solution\cf0 \
+    \cf2 /*\
+    // pad our map by 10% around the farthest annotations\
+#define MAP_PADDING 1.1\
+    \
+    // we'll make sure that our minimum vertical span is about a kilometer\
+    // there are ~111km to a degree of latitude. regionThatFits will take care of\
+    // longitude, which is more complicated, anyway.\
+#define MINIMUM_VISIBLE_LATITUDE 0.01\
+    \
+    MKCoordinateRegion region;\
+    region.center.latitude = (minLatitude + maxLatitude) / 2;\
+    region.center.longitude = (minLongitude + maxLongitude) / 2;\
+    \
+    region.span.latitudeDelta = (maxLatitude - minLatitude) * MAP_PADDING;\
+    \
+    region.span.latitudeDelta = (region.span.latitudeDelta < MINIMUM_VISIBLE_LATITUDE)\
+    ? MINIMUM_VISIBLE_LATITUDE\
+    : region.span.latitudeDelta;\
+    \
+    region.span.longitudeDelta = (maxLongitude - minLongitude) * MAP_PADDING;\
+    \
+    MKCoordinateRegion scaledRegion = [regionsMapView regionThatFits:region];\
+    [regionsMapView setRegion:scaledRegion animated:YES];\
+    \
+    \
+    \
+    \
+*/\cf0 \
+    \
+    \
+\}\
+\
+\
+\cf3 #pragma mark - MKMapViewDelegate\
+\cf0 \
+\cf2 //Available in iOS 4.0 and later. Deprecated in iOS 7.0.\cf0 \
+- (\cf7 MKOverlayView\cf0  *)mapView:(\cf7 MKMapView\cf0  *)mapView viewForOverlay:(\cf5 id\cf0  )overlay\
+\{\
+    \cf5 if\cf0  ([overlay isKindOfClass:[MKPolygon class]]) \{\
+        MKPolygon *polygonadf = (MKPolygon *)overlay;\
+        MKPolygonView *polygonView = [[MKPolygonView alloc] initWithPolygon:overlay];\
+        \
+        \cf5 if\cf0  ([polygonadf.title isEqualToString:\cf4 @"red"\cf0 ]) \{\
+            polygonView.lineWidth = \cf9 5\cf0 ;\
+            polygonView.strokeColor = [UIColor clearColor];\
+            polygonView.fillColor = [UIColor redColor];\
+        \}\
+        \cf5 if\cf0  ([polygonadf.title isEqualToString:\cf4 @"green"\cf0 ]) \{\
+            polygonView.lineWidth = \cf9 5\cf0 ;\
+            polygonView.strokeColor = [UIColor clearColor];\
+            polygonView.fillColor = [UIColor greenColor];\
+        \}\
+        \cf5 return\cf0  polygonView;\
+    \}\
+    \cf5 else\cf0  \cf5 if\cf0  ([overlay isKindOfClass:[MKPolyline class]]) \{\
+        MKPolylineView *routeLineView = [[MKPolylineView alloc] initWithPolyline:overlay] ;\
+        \cf2 //        routeLineView.fillColor = [UIColor yellowColor];\cf0 \
+        routeLineView.strokeColor = [UIColor yellowColor];\
+        routeLineView.lineWidth = \cf9 5\cf0 ;\
+        \cf5 return\cf0  routeLineView;\
+    \}\
+    \cf5 return\cf0  \cf5 nil\cf0 ;\
+\}\
+\
+\cf2 //Available in iOS 7.0 and later.\cf0 \
+- (MKOverlayRenderer *)mapView:(MKMapView *)mapView rendererForOverlay:(\cf5 id\cf0  < MKOverlay >)overlay\
+\{\
+    \cf5 if\cf0  ([overlay isKindOfClass:[MKPolygon class]]) \{\
+        MKPolygon *polygonadf = (MKPolygon *)overlay;\
+        MKPolygonView *polygonView = [[MKPolygonView alloc] initWithPolygon:overlay];\
+        \
+        \cf5 if\cf0  ([polygonadf.title isEqualToString:\cf4 @"red"\cf0 ]) \{\
+            polygonView.lineWidth = \cf9 5\cf0 ;\
+            polygonView.strokeColor = [UIColor clearColor];\
+            polygonView.fillColor = [UIColor redColor];\
+        \}\
+        \cf5 if\cf0  ([polygonadf.title isEqualToString:\cf4 @"green"\cf0 ]) \{\
+            polygonView.lineWidth = \cf9 5\cf0 ;\
+            polygonView.strokeColor = [UIColor clearColor];\
+            polygonView.fillColor = [UIColor greenColor];\
+        \}\
+        \
+        MKOverlayRenderer *polygonOverlayRenderer = (MKOverlayRenderer *)polygonView;\
+        \cf5 return\cf0  polygonOverlayRenderer;\
+    \}\
+    \cf5 else\cf0  \cf5 if\cf0  ([overlay isKindOfClass:[MKPolyline class]]) \{\
+        MKPolylineView *routeLineView = [[MKPolylineView alloc] initWithPolyline:overlay] ;\
+        \cf2 //        routeLineView.fillColor = [UIColor yellowColor];\cf0 \
+        routeLineView.strokeColor = [UIColor yellowColor];\
+        routeLineView.lineWidth = \cf9 5\cf0 ;\
+        \
+        MKOverlayRenderer *routeLineOverlayRenderer = (MKOverlayRenderer *)routeLineView;\
+        \cf5 return\cf0  routeLineOverlayRenderer;\
+    \}\
+    \cf5 return\cf0  \cf5 nil\cf0 ;\
+\}\
+\
+\cf2 /*\
+- (void)addPolyLinesToTheRegionsMapView \{\
+    //retrieving info from csv file\
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"lineareabuffer" ofType:@"csv"];\
+    NSString *fileContents = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];\
+    NSArray *latLongArray = [fileContents componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];\
+    \
+    CLLocationCoordinate2D *coordstemp = malloc(sizeof(CLLocationCoordinate2D) * [latLongArray count]);\
+    \
+    [latLongArray enumerateObjectsUsingBlock:^(NSString *latLongObj, NSUInteger latLongIdx, BOOL *stop) \{\
+        latLongObj = [latLongArray objectAtIndex:latLongIdx];\
+        NSArray *latLongPoint = [latLongObj componentsSeparatedByString:@","];\
+        coordstemp[latLongIdx] = CLLocationCoordinate2DMake([[latLongPoint objectAtIndex:0] doubleValue], [[latLongPoint objectAtIndex:1] doubleValue]);\
+    \}];\
+    \
+    MKPolyline *line = [MKPolyline polylineWithCoordinates:coordstemp count:[latLongArray count]];\
+    line.title = @"line";\
+    free(coordstemp);\
+    [regionsMapView addOverlay:line];\
+\}\
+\
+\
+- (void)addPolygonsToTheRegionsMapView \{\
+    \
+    //retrieving info from csv file\
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"sharedusearea" ofType:@"csv"];\
+    NSString *fileContents = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];\
+    NSArray *latLongArray = [fileContents componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];\
+    \
+    CLLocationCoordinate2D *coordstemp = malloc(sizeof(CLLocationCoordinate2D) * [latLongArray count]);\
+    \
+    [latLongArray enumerateObjectsUsingBlock:^(NSString *latLongObj, NSUInteger latLongIdx, BOOL *stop) \{\
+        latLongObj = [latLongArray objectAtIndex:latLongIdx];\
+        NSArray *latLongPoint = [latLongObj componentsSeparatedByString:@","];\
+        coordstemp[latLongIdx] = CLLocationCoordinate2DMake([[latLongPoint objectAtIndex:0] doubleValue], [[latLongPoint objectAtIndex:1] doubleValue]);\
+    \}];\
+    \
+    MKPolygon *polygontemp = [MKPolygon polygonWithCoordinates:coordstemp count:[latLongArray count]];\
+    polygontemp.title = @"green";\
+    free(coordstemp);\
+    [regionsMapView addOverlay:polygontemp];\
+    \
+\}\
+ */\cf0 \
+\
+\cf5 @end\cf0 \
+}
